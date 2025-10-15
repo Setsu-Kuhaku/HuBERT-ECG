@@ -1,7 +1,15 @@
+import sys
 import torch
 import torch.nn as nn
+
+from pathlib import Path
 from transformers.modeling_outputs import BaseModelOutput
 from typing import Optional, Tuple, Union
+
+# Import custom modules
+PROJECT_ROOT = Path(__file__).parents[0]
+sys.path.append(str(PROJECT_ROOT))
+
 from hubert_ecg import HuBERTECG, HuBERTECGConfig
 
 class ActivationFunction(nn.Module):

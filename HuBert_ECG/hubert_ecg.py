@@ -18,6 +18,7 @@ class HuBERTECGConfig(HubertConfig):
         self.ensemble_length = ensemble_length
         self.vocab_sizes = vocab_sizes if isinstance(vocab_sizes, list) else [vocab_sizes]
 
+
 class HuBERTECG(HubertModel):
     
     config_class = HuBERTECGConfig
@@ -25,7 +26,6 @@ class HuBERTECG(HubertModel):
     def __init__(self, config: HuBERTECGConfig):
         super().__init__(config)
         self.config = config
-
         self.pretraining_vocab_sizes = config.vocab_sizes
             
         assert config.ensemble_length > 0 and config.ensemble_length == len(config.vocab_sizes), f"ensemble_length {config.ensemble_length} must be equal to len(vocab_sizes) {len(config.vocab_sizes)}"
@@ -35,8 +35,8 @@ class HuBERTECG(HubertModel):
 
         # embedding for codebooks
         self.label_embedding = nn.ModuleList([nn.Embedding(vocab_size, config.classifier_proj_size) for vocab_size in config.vocab_sizes])
-        
         assert len(self.final_proj) == len(self.label_embedding), f"final_proj and label_embedding must have the same length"
+
 
     def _mask_hidden_states(
         self,
@@ -79,6 +79,7 @@ class HuBERTECG(HubertModel):
             hidden_states[mask_feature_indices] = 0
         return hidden_states, mask_time_indices
         
+
     def logits(self, transformer_output: torch.Tensor) -> torch.Tensor:
         # takes (B, T, D)
         
@@ -92,6 +93,7 @@ class HuBERTECG(HubertModel):
         ) / 0.1 for projected_output, label_emb in zip(projected_outputs, self.label_embedding)]
         
         return ensemble_logits # returns [(BS, T, V)] * ensemble_length
+    
     
     def forward(
         self,
@@ -122,6 +124,7 @@ class HuBERTECG(HubertModel):
             return_dict=return_dict,
         )
         hidden_states = encoder_outputs[0]
+
         if not return_dict:
             if mask_time_indices is None:
                 return (hidden_states, ) + encoder_outputs[1:]
